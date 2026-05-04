@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Local database or connection notes should not be committed.
+*.local
+
+# Office temporary files
+~$*
+
+# Earlier project submissions are local reference material for this Part 4 repo.
+DMS-Casey-Rawson-p1-sp26/
+DMS-Casey-Rawson_p2_sp26/
+DMS_Casey_Rawson_p3_sp26/
+ProjectPart4.pdf
