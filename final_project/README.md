@@ -2,10 +2,10 @@
 
 This Part 4 project adds a small end-to-end workflow:
 
-1. Download and transform real CDC BRFSS lifestyle data and CMS Rate PUF insurance-rate data.
+1. Download and transform real data from the Centers for Disease Control and Prevention (CDC) Behavioral Risk Factor Surveillance System (BRFSS) and the Centers for Medicare & Medicaid Services (CMS) Marketplace Rate Public Use File (Rate PUF).
 2. Load the Decision Tree model generated for Part 4.
 3. Predict a lifestyle risk tier.
-4. Calculate an insurance rate recommendation using a CMS benchmark base rate.
+4. Calculate an insurance rate recommendation using a Centers for Medicare & Medicaid Services (CMS) benchmark base rate.
 5. Write the result back to PostgreSQL.
 
 ## Install dependencies
@@ -22,7 +22,7 @@ pip install -r final_project\app\requirements.txt
 python final_project\app\build_real_data_sources.py
 ```
 
-This downloads official CDC BRFSS 2023 and CMS 2024 Rate PUF files into `final_project\data_raw`, then writes clean project extracts into `final_project\model`. The script reads the large source files in chunks but uses every valid BRFSS row it can transform.
+This downloads official Centers for Disease Control and Prevention (CDC) BRFSS 2023 and Centers for Medicare & Medicaid Services (CMS) 2024 Marketplace Rate PUF files into `final_project\data_raw`, then writes clean project extracts into `final_project\model`. The script reads the large source files in chunks but uses every valid BRFSS row it can transform.
 
 ## Run without database writes
 
@@ -58,6 +58,11 @@ python final_project\app\retrain_model.py
 
 The retraining script reads `final_project\model\brfss_lifestyle_risk_training.csv`.
 The generated model file is written to `final_project\model\chronic_disease_risk_model.joblib`.
+
+## Data Sources
+
+- Centers for Disease Control and Prevention (CDC) Behavioral Risk Factor Surveillance System (BRFSS) 2023 annual survey data: used for lifestyle and health-risk model training.
+- Centers for Medicare & Medicaid Services (CMS) Marketplace Rate Public Use File (Rate PUF) 2024: used to create age and tobacco benchmark monthly rates.
 
 ## Topic framing
 

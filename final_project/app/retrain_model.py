@@ -80,8 +80,8 @@ def main() -> None:
     model_output.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, model_output)
 
-    print("CDC BRFSS Lifestyle Risk Model Retraining Complete")
-    print("--------------------------------------------------")
+    print("Centers for Disease Control and Prevention (CDC) BRFSS Lifestyle Risk Model Retraining Complete")
+    print("----------------------------------------------------------------------------------------------")
     print(f"Training rows: {len(df)}")
     print(f"Feature columns: {', '.join(X.columns)}")
     print(f"Accuracy: {accuracy:.2f}")

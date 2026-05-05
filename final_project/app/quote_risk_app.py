@@ -20,8 +20,10 @@ PART4_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL_PATH = PART4_ROOT / "model" / "chronic_disease_risk_model.joblib"
 DEFAULT_RATE_PATH = PART4_ROOT / "model" / "cms_rate_benchmark.csv"
 DEFAULT_DATASET_URI = (
-    "CDC BRFSS 2023: https://www.cdc.gov/brfss/annual_data/annual_2023.html; "
-    "CMS Rate PUF 2024: https://www.cms.gov/marketplace/resources/data/public-use-files"
+    "Centers for Disease Control and Prevention (CDC) BRFSS 2023: "
+    "https://www.cdc.gov/brfss/annual_data/annual_2023.html; "
+    "Centers for Medicare & Medicaid Services (CMS) Rate PUF 2024: "
+    "https://www.cms.gov/marketplace/resources/data/public-use-files"
 )
 
 FEATURE_COLUMNS = [
@@ -218,7 +220,10 @@ def load_rate_benchmark(rate_path: Path, customer: CustomerInput) -> RateBenchma
     nearest = rates.iloc[(rates["age"] - customer.age).abs().argsort()[:1]].iloc[0]
     column = "cms_tobacco_monthly_rate" if customer.tobacco_user else "cms_base_monthly_rate"
     return RateBenchmark(
-        source=f"CMS 2024 Rate PUF median {column} for age {int(nearest['age'])}",
+        source=(
+            "Centers for Medicare & Medicaid Services (CMS) 2024 Rate PUF "
+            f"median {column} for age {int(nearest['age'])}"
+        ),
         base_monthly_rate=decimal_money(Decimal(str(nearest[column]))),
     )
 
@@ -279,8 +284,10 @@ def score_risk(model, customer: CustomerInput, benchmark: RateBenchmark) -> Risk
     adjustment = RATE_ADJUSTMENTS[tier]
     recommended_rate = decimal_money(benchmark.base_monthly_rate * adjustment)
     reason = (
-        f"{tier} rate recommendation based on CDC BRFSS lifestyle risk model, "
-        f"{risk_probability:.2f} high-risk probability, CMS base rate benchmark, "
+        f"{tier} rate recommendation based on the "
+        "Centers for Disease Control and Prevention (CDC) BRFSS lifestyle risk model, "
+        f"{risk_probability:.2f} high-risk probability, "
+        "Centers for Medicare & Medicaid Services (CMS) base rate benchmark, "
         f"and {flags} customer risk flags."
     )
 

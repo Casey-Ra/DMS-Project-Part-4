@@ -17,4 +17,4 @@ CREATE INDEX IF NOT EXISTS idx_quoterecommendation_healthprofile
 ON "QuoteRecommendation" ("HealthProfileID");
 
 COMMENT ON TABLE "QuoteRecommendation" IS
-'Stores lifestyle risk tier and insurance rate recommendation from the Part 4 BRFSS/CMS ML workflow.';
+'Stores lifestyle risk tier and insurance rate recommendation from the Part 4 Centers for Disease Control and Prevention BRFSS and Centers for Medicare & Medicaid Services Rate PUF workflow.';

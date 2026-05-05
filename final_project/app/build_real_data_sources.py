@@ -35,7 +35,11 @@ BRFSS_COLUMNS = [
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build real CDC BRFSS training data and CMS rate benchmarks."
+        description=(
+            "Build real Centers for Disease Control and Prevention (CDC) BRFSS "
+            "training data and Centers for Medicare & Medicaid Services (CMS) "
+            "rate benchmarks."
+        )
     )
     parser.add_argument("--force-download", action="store_true")
     return parser.parse_args()
@@ -124,8 +128,8 @@ def build_brfss_training_data() -> None:
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     dataset.to_csv(BRFSS_OUTPUT, index=False)
 
-    print("CDC BRFSS lifestyle training data built")
-    print("---------------------------------------")
+    print("Centers for Disease Control and Prevention (CDC) BRFSS lifestyle training data built")
+    print("-----------------------------------------------------------------------------------")
     print(f"Rows written: {len(dataset)}")
     print(f"High-risk rows: {int(dataset['high_risk'].sum())}")
     print(f"Saved: {BRFSS_OUTPUT}")
@@ -167,8 +171,8 @@ def build_cms_rate_benchmark() -> None:
     benchmark.to_csv(CMS_OUTPUT, index=False)
 
     print()
-    print("CMS Rate PUF benchmark built")
-    print("----------------------------")
+    print("Centers for Medicare & Medicaid Services (CMS) Rate PUF benchmark built")
+    print("-----------------------------------------------------------------------")
     print(f"Ages written: {len(benchmark)}")
     print(f"Saved: {CMS_OUTPUT}")
 
