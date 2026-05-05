@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shlex
 from datetime import date
 
 from sqlalchemy import (
@@ -15,6 +16,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.engine import URL
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 
@@ -99,8 +101,33 @@ class QuoteRecommendation(Base):
     CreatedDate: Mapped[date] = mapped_column(Date, nullable=False)
 
 
+def normalize_database_url(database_url: str) -> str | URL:
+    if database_url.startswith(("postgresql://", "postgresql+psycopg2://")):
+        return database_url
+
+    parts = {}
+    for token in shlex.split(database_url):
+        if "=" not in token:
+            continue
+        key, value = token.split("=", 1)
+        parts[key] = value
+
+    if not parts:
+        raise ValueError("Database URL was not recognized as a PostgreSQL URL or key=value string.")
+
+    return URL.create(
+        "postgresql+psycopg2",
+        username=parts.get("user"),
+        password=parts.get("password"),
+        host=parts.get("host"),
+        port=int(parts["port"]) if parts.get("port") else None,
+        database=parts.get("dbname") or parts.get("database"),
+        query={"sslmode": parts["sslmode"]} if parts.get("sslmode") else {},
+    )
+
+
 def make_session(database_url: str) -> Session:
-    engine = create_engine(database_url, future=True)
+    engine = create_engine(normalize_database_url(database_url), future=True)
     Base.metadata.create_all(engine, tables=[QuoteRecommendation.__table__], checkfirst=True)
     return Session(engine)
 
