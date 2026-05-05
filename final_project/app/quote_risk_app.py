@@ -96,13 +96,16 @@ def decimal_money(value: Decimal) -> Decimal:
     return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def prompt_if_missing(value: object | None, prompt: str, cast=str):
+def prompt_str_if_missing(value: str | None, prompt: str) -> str:
     if value is not None:
         return value
-    raw = input(prompt).strip()
-    if raw == "" and cast is Decimal:
-        return None
-    return cast(raw)
+    return input(prompt).strip()
+
+
+def prompt_int_if_missing(value: int | None, prompt: str) -> int:
+    if value is not None:
+        return value
+    return int(input(prompt).strip())
 
 
 def prompt_yes_no_if_missing(value: int | None, prompt: str) -> int:
@@ -177,9 +180,9 @@ def parse_args() -> argparse.Namespace:
 
 def read_customer_input(args: argparse.Namespace) -> CustomerInput:
     return CustomerInput(
-        first_name=prompt_if_missing(args.first_name, "First name: "),
-        last_name=prompt_if_missing(args.last_name, "Last name: "),
-        age=prompt_if_missing(args.age, "Age: ", int),
+        first_name=prompt_str_if_missing(args.first_name, "First name: "),
+        last_name=prompt_str_if_missing(args.last_name, "Last name: "),
+        age=prompt_int_if_missing(args.age, "Age: "),
         tobacco_user=prompt_yes_no_if_missing(args.tobacco_user, "Tobacco user?"),
         obese=prompt_yes_no_if_missing(args.obese, "Obese BMI category?"),
         physical_inactivity=prompt_yes_no_if_missing(
