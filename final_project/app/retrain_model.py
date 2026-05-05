@@ -14,7 +14,7 @@ PART4_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_PATH = (
     PART4_ROOT
     / "model"
-    / "chronic_disease_sample_data.csv"
+    / "brfss_lifestyle_risk_training.csv"
 )
 DEFAULT_MODEL_PATH = (
     PART4_ROOT
@@ -22,6 +22,16 @@ DEFAULT_MODEL_PATH = (
     / "chronic_disease_risk_model.joblib"
 )
 TARGET_COLUMN = "high_risk"
+FEATURE_COLUMNS = [
+    "age",
+    "tobacco_user",
+    "obese",
+    "physical_inactivity",
+    "binge_drinking",
+    "heavy_drinking",
+    "diabetes",
+    "general_health",
+]
 
 
 def parse_args() -> argparse.Namespace:
@@ -46,7 +56,11 @@ def main() -> None:
     if TARGET_COLUMN not in df.columns:
         raise ValueError(f"Dataset must include target column: {TARGET_COLUMN}")
 
-    X = df.drop(columns=[TARGET_COLUMN])
+    missing_columns = [col for col in FEATURE_COLUMNS if col not in df.columns]
+    if missing_columns:
+        raise ValueError(f"Dataset missing feature columns: {', '.join(missing_columns)}")
+
+    X = df[FEATURE_COLUMNS]
     y = df[TARGET_COLUMN]
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -66,8 +80,8 @@ def main() -> None:
     model_output.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(model, model_output)
 
-    print("Lifestyle Risk Model Retraining Complete")
-    print("----------------------------------------")
+    print("CDC BRFSS Lifestyle Risk Model Retraining Complete")
+    print("--------------------------------------------------")
     print(f"Training rows: {len(df)}")
     print(f"Feature columns: {', '.join(X.columns)}")
     print(f"Accuracy: {accuracy:.2f}")

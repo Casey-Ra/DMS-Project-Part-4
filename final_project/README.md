@@ -1,11 +1,11 @@
-# Lifestyle Risk-Based Insurance Quote Support
+# Lifestyle Risk-Based Rate Recommendation
 
-This Part 4 starter adds a small end-to-end workflow for the final project:
+This Part 4 project adds a small end-to-end workflow:
 
-1. Collect customer lifestyle risk inputs.
+1. Download and transform real CDC BRFSS lifestyle data and CMS Rate PUF insurance-rate data.
 2. Load the Decision Tree model generated for Part 4.
 3. Predict a lifestyle risk tier.
-4. Calculate a sample insurance rate recommendation.
+4. Calculate an insurance rate recommendation using a CMS benchmark base rate.
 5. Write the result back to PostgreSQL.
 
 ## Install dependencies
@@ -16,14 +16,22 @@ From `c:\Users\craws\Documents\DMSProject4`:
 pip install -r final_project\app\requirements.txt
 ```
 
+## Build real data sources
+
+```powershell
+python final_project\app\build_real_data_sources.py
+```
+
+This downloads official CDC BRFSS 2023 and CMS 2024 Rate PUF files into `final_project\data_raw`, then writes clean project extracts into `final_project\model`. The script reads the large source files in chunks but uses every valid BRFSS row it can transform.
+
 ## Run without database writes
 
-If the model file is not present yet, run the retraining command first.
+Build the real data sources and retrain the model first.
 
 Use this for a quick screenshot of the analytics output:
 
 ```powershell
-python final_project\app\quote_risk_app.py --dry-run --first-name Casey --last-name Demo --age 45 --exercise-level 2 --unhealthy-eating-level 3 --smoking-drinking 1 --heredity 1 --living-standard 3 --base-monthly-rate 220
+python final_project\app\quote_risk_app.py --dry-run --first-name Casey --last-name Demo --age 45 --tobacco-user 1 --obese 1 --physical-inactivity 1 --binge-drinking 0 --heavy-drinking 0 --diabetes 0 --general-health 3
 ```
 
 ## Run against PostgreSQL
@@ -37,10 +45,10 @@ $env:DMS_DATABASE_URL = "postgresql://USER:PASSWORD@HOST:5432/DATABASE"
 Then run:
 
 ```powershell
-python final_project\app\quote_risk_app.py --first-name Casey --last-name Demo --age 45 --exercise-level 2 --unhealthy-eating-level 3 --smoking-drinking 1 --heredity 1 --living-standard 3 --base-monthly-rate 220
+python final_project\app\quote_risk_app.py --first-name Casey --last-name Demo --age 45 --tobacco-user 1 --obese 1 --physical-inactivity 1 --binge-drinking 0 --heavy-drinking 0 --diabetes 0 --general-health 3
 ```
 
-The app creates `QuoteRecommendation` if it does not already exist.
+The app creates `QuoteRecommendation` if it does not already exist. The table name remains `QuoteRecommendation`, but the report should describe the business output as a rate recommendation.
 
 ## Retrain the model
 
@@ -48,14 +56,14 @@ The app creates `QuoteRecommendation` if it does not already exist.
 python final_project\app\retrain_model.py
 ```
 
-The retraining script reads `final_project\model\chronic_disease_sample_data.csv`.
+The retraining script reads `final_project\model\brfss_lifestyle_risk_training.csv`.
 The generated model file is written to `final_project\model\chronic_disease_risk_model.joblib`.
 
 ## Topic framing
 
 Use this wording in the report:
 
-> Lifestyle Risk-Based Insurance Quote Support
+> Lifestyle Risk-Based Rate Recommendation
 
 Use this insight question:
 

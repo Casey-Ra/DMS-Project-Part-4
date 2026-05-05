@@ -16,22 +16,23 @@ except ImportError:  # pragma: no cover - handled at runtime for dry runs
     psycopg2 = None
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PART4_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MODEL_PATH = (
-    PART4_ROOT
-    / "model"
-    / "chronic_disease_risk_model.joblib"
+DEFAULT_MODEL_PATH = PART4_ROOT / "model" / "chronic_disease_risk_model.joblib"
+DEFAULT_RATE_PATH = PART4_ROOT / "model" / "cms_rate_benchmark.csv"
+DEFAULT_DATASET_URI = (
+    "CDC BRFSS 2023: https://www.cdc.gov/brfss/annual_data/annual_2023.html; "
+    "CMS Rate PUF 2024: https://www.cms.gov/marketplace/resources/data/public-use-files"
 )
-DEFAULT_DATASET_URI = "local://final_project/model/chronic_disease_sample_data.csv"
 
 FEATURE_COLUMNS = [
     "age",
-    "exercise_level",
-    "unhealthy_eating_level",
-    "smoking_drinking",
-    "heredity",
-    "living_standard",
+    "tobacco_user",
+    "obese",
+    "physical_inactivity",
+    "binge_drinking",
+    "heavy_drinking",
+    "diabetes",
+    "general_health",
 ]
 
 RATE_ADJUSTMENTS = {
@@ -52,11 +53,19 @@ class CustomerInput:
     first_name: str
     last_name: str
     age: int
-    exercise_level: int
-    unhealthy_eating_level: int
-    smoking_drinking: int
-    heredity: int
-    living_standard: int
+    tobacco_user: int
+    obese: int
+    physical_inactivity: int
+    binge_drinking: int
+    heavy_drinking: int
+    diabetes: int
+    general_health: int
+    manual_base_monthly_rate: Decimal | None
+
+
+@dataclass
+class RateBenchmark:
+    source: str
     base_monthly_rate: Decimal
 
 
@@ -67,6 +76,8 @@ class RiskResult:
     risk_tier: str
     risk_score: Decimal
     primary_risk_factor: str
+    base_rate_source: str
+    base_monthly_rate: Decimal
     rate_adjustment_factor: Decimal
     recommended_monthly_rate: Decimal
     recommendation_reason: str
@@ -80,23 +91,37 @@ def prompt_if_missing(value: object | None, prompt: str, cast=str):
     if value is not None:
         return value
     raw = input(prompt).strip()
+    if raw == "" and cast is Decimal:
+        return None
     return cast(raw)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Lifestyle risk-based insurance quote support demo."
+        description="BRFSS and CMS based lifestyle risk rate recommendation demo."
     )
     parser.add_argument("--first-name")
     parser.add_argument("--last-name")
     parser.add_argument("--age", type=int)
-    parser.add_argument("--exercise-level", type=int, choices=range(1, 5))
-    parser.add_argument("--unhealthy-eating-level", type=int, choices=range(1, 5))
-    parser.add_argument("--smoking-drinking", type=int, choices=(0, 1))
-    parser.add_argument("--heredity", type=int, choices=(0, 1))
-    parser.add_argument("--living-standard", type=int, choices=range(1, 5))
-    parser.add_argument("--base-monthly-rate", type=Decimal)
+    parser.add_argument("--tobacco-user", type=int, choices=(0, 1))
+    parser.add_argument("--obese", type=int, choices=(0, 1))
+    parser.add_argument("--physical-inactivity", type=int, choices=(0, 1))
+    parser.add_argument("--binge-drinking", type=int, choices=(0, 1))
+    parser.add_argument("--heavy-drinking", type=int, choices=(0, 1))
+    parser.add_argument("--diabetes", type=int, choices=(0, 1))
+    parser.add_argument(
+        "--general-health",
+        type=int,
+        choices=range(1, 6),
+        help="BRFSS general health scale: 1=excellent, 5=poor.",
+    )
+    parser.add_argument(
+        "--base-monthly-rate",
+        type=Decimal,
+        help="Optional manual base rate. If omitted, CMS Rate PUF median rate is used.",
+    )
     parser.add_argument("--model-path", type=Path, default=DEFAULT_MODEL_PATH)
+    parser.add_argument("--rate-path", type=Path, default=DEFAULT_RATE_PATH)
     parser.add_argument(
         "--database-url",
         default=os.getenv("DMS_DATABASE_URL") or os.getenv("PG_URI"),
@@ -120,44 +145,41 @@ def read_customer_input(args: argparse.Namespace) -> CustomerInput:
         first_name=prompt_if_missing(args.first_name, "First name: "),
         last_name=prompt_if_missing(args.last_name, "Last name: "),
         age=prompt_if_missing(args.age, "Age: ", int),
-        exercise_level=prompt_if_missing(
-            args.exercise_level, "Exercise level (1=low, 4=high): ", int
+        tobacco_user=prompt_if_missing(args.tobacco_user, "Tobacco user? (0=no, 1=yes): ", int),
+        obese=prompt_if_missing(args.obese, "Obese BMI category? (0=no, 1=yes): ", int),
+        physical_inactivity=prompt_if_missing(
+            args.physical_inactivity, "Physically inactive? (0=no, 1=yes): ", int
         ),
-        unhealthy_eating_level=prompt_if_missing(
-            args.unhealthy_eating_level,
-            "Unhealthy eating level (1=low, 4=high): ",
-            int,
+        binge_drinking=prompt_if_missing(
+            args.binge_drinking, "Binge drinking risk? (0=no, 1=yes): ", int
         ),
-        smoking_drinking=prompt_if_missing(
-            args.smoking_drinking, "Smoking/drinking? (0=no, 1=yes): ", int
+        heavy_drinking=prompt_if_missing(
+            args.heavy_drinking, "Heavy drinking risk? (0=no, 1=yes): ", int
         ),
-        heredity=prompt_if_missing(args.heredity, "Heredity risk? (0=no, 1=yes): ", int),
-        living_standard=prompt_if_missing(
-            args.living_standard, "Living standard (1=low, 4=high): ", int
+        diabetes=prompt_if_missing(args.diabetes, "Diabetes? (0=no, 1=yes): ", int),
+        general_health=prompt_if_missing(
+            args.general_health, "General health (1=excellent, 5=poor): ", int
         ),
-        base_monthly_rate=prompt_if_missing(
-            args.base_monthly_rate, "Base monthly rate: ", Decimal
-        ),
+        manual_base_monthly_rate=args.base_monthly_rate,
     )
 
 
 def validate_customer_input(customer: CustomerInput) -> None:
-    if customer.age < 0 or customer.age > 120:
-        raise ValueError("Age must be between 0 and 120.")
+    if customer.age < 18 or customer.age > 80:
+        raise ValueError("Age must be between 18 and 80 for the BRFSS/CMS demo.")
     for label, value in [
-        ("exercise level", customer.exercise_level),
-        ("unhealthy eating level", customer.unhealthy_eating_level),
-        ("living standard", customer.living_standard),
-    ]:
-        if value < 1 or value > 4:
-            raise ValueError(f"{label.title()} must be from 1 to 4.")
-    for label, value in [
-        ("smoking/drinking", customer.smoking_drinking),
-        ("heredity", customer.heredity),
+        ("tobacco user", customer.tobacco_user),
+        ("obese", customer.obese),
+        ("physical inactivity", customer.physical_inactivity),
+        ("binge drinking", customer.binge_drinking),
+        ("heavy drinking", customer.heavy_drinking),
+        ("diabetes", customer.diabetes),
     ]:
         if value not in (0, 1):
             raise ValueError(f"{label.title()} must be 0 or 1.")
-    if customer.base_monthly_rate <= 0:
+    if customer.general_health < 1 or customer.general_health > 5:
+        raise ValueError("General health must be from 1 to 5.")
+    if customer.manual_base_monthly_rate is not None and customer.manual_base_monthly_rate <= 0:
         raise ValueError("Base monthly rate must be greater than zero.")
 
 
@@ -166,29 +188,57 @@ def feature_frame(customer: CustomerInput) -> pd.DataFrame:
         [
             {
                 "age": customer.age,
-                "exercise_level": customer.exercise_level,
-                "unhealthy_eating_level": customer.unhealthy_eating_level,
-                "smoking_drinking": customer.smoking_drinking,
-                "heredity": customer.heredity,
-                "living_standard": customer.living_standard,
+                "tobacco_user": customer.tobacco_user,
+                "obese": customer.obese,
+                "physical_inactivity": customer.physical_inactivity,
+                "binge_drinking": customer.binge_drinking,
+                "heavy_drinking": customer.heavy_drinking,
+                "diabetes": customer.diabetes,
+                "general_health": customer.general_health,
             }
         ],
         columns=FEATURE_COLUMNS,
     )
 
 
+def load_rate_benchmark(rate_path: Path, customer: CustomerInput) -> RateBenchmark:
+    if customer.manual_base_monthly_rate is not None:
+        return RateBenchmark(
+            source="Manual user-entered base rate",
+            base_monthly_rate=decimal_money(customer.manual_base_monthly_rate),
+        )
+
+    if not rate_path.exists():
+        raise FileNotFoundError(
+            f"CMS rate benchmark not found: {rate_path}. "
+            "Run build_real_data_sources.py first, or provide --base-monthly-rate."
+        )
+
+    rates = pd.read_csv(rate_path)
+    nearest = rates.iloc[(rates["age"] - customer.age).abs().argsort()[:1]].iloc[0]
+    column = "cms_tobacco_monthly_rate" if customer.tobacco_user else "cms_base_monthly_rate"
+    return RateBenchmark(
+        source=f"CMS 2024 Rate PUF median {column} for age {int(nearest['age'])}",
+        base_monthly_rate=decimal_money(Decimal(str(nearest[column]))),
+    )
+
+
 def identify_primary_risk_factor(customer: CustomerInput) -> str:
-    if customer.smoking_drinking:
-        return "Smoking/Drinking"
-    if customer.unhealthy_eating_level >= 3:
-        return "Unhealthy Eating"
-    if customer.exercise_level <= 2:
-        return "Low Exercise"
-    if customer.heredity:
-        return "Heredity"
-    if customer.living_standard <= 2:
-        return "Living Standard"
-    if customer.age >= 50:
+    if customer.diabetes:
+        return "Diabetes"
+    if customer.tobacco_user:
+        return "Tobacco Use"
+    if customer.obese:
+        return "Obesity"
+    if customer.physical_inactivity:
+        return "Physical Inactivity"
+    if customer.heavy_drinking:
+        return "Heavy Drinking"
+    if customer.binge_drinking:
+        return "Binge Drinking"
+    if customer.general_health >= 4:
+        return "Fair/Poor General Health"
+    if customer.age >= 55:
         return "Age"
     return "General Lifestyle"
 
@@ -196,17 +246,19 @@ def identify_primary_risk_factor(customer: CustomerInput) -> str:
 def lifestyle_flag_count(customer: CustomerInput) -> int:
     return sum(
         [
-            customer.age >= 50,
-            customer.exercise_level <= 2,
-            customer.unhealthy_eating_level >= 3,
-            customer.smoking_drinking == 1,
-            customer.heredity == 1,
-            customer.living_standard <= 2,
+            customer.age >= 55,
+            customer.tobacco_user == 1,
+            customer.obese == 1,
+            customer.physical_inactivity == 1,
+            customer.binge_drinking == 1,
+            customer.heavy_drinking == 1,
+            customer.diabetes == 1,
+            customer.general_health >= 4,
         ]
     )
 
 
-def score_risk(model, customer: CustomerInput) -> RiskResult:
+def score_risk(model, customer: CustomerInput, benchmark: RateBenchmark) -> RiskResult:
     features = feature_frame(customer)
     prediction = int(model.predict(features)[0])
 
@@ -225,11 +277,11 @@ def score_risk(model, customer: CustomerInput) -> RiskResult:
         tier = "Low"
 
     adjustment = RATE_ADJUSTMENTS[tier]
-    recommended_rate = decimal_money(customer.base_monthly_rate * adjustment)
-    primary_factor = identify_primary_risk_factor(customer)
+    recommended_rate = decimal_money(benchmark.base_monthly_rate * adjustment)
     reason = (
-        f"{tier} lifestyle risk tier based on model output, "
-        f"{risk_probability:.2f} high-risk probability, and {flags} risk flags."
+        f"{tier} rate recommendation based on CDC BRFSS lifestyle risk model, "
+        f"{risk_probability:.2f} high-risk probability, CMS base rate benchmark, "
+        f"and {flags} customer risk flags."
     )
 
     return RiskResult(
@@ -237,7 +289,9 @@ def score_risk(model, customer: CustomerInput) -> RiskResult:
         risk_probability=risk_probability,
         risk_tier=tier,
         risk_score=RISK_SCORES[tier],
-        primary_risk_factor=primary_factor,
+        primary_risk_factor=identify_primary_risk_factor(customer),
+        base_rate_source=benchmark.source,
+        base_monthly_rate=benchmark.base_monthly_rate,
         rate_adjustment_factor=adjustment,
         recommended_monthly_rate=recommended_rate,
         recommendation_reason=reason,
@@ -288,7 +342,7 @@ def upsert_disease(cursor) -> int:
         (
             "Lifestyle Chronic Disease Risk",
             "Lifestyle Risk",
-            "Risk tier used for insurance quote support and underwriting review.",
+            "Risk tier used for insurance rate recommendation and underwriting review.",
         ),
     )
     return int(cursor.fetchone()[0])
@@ -309,8 +363,8 @@ def upsert_risk_factor(cursor, factor_name: str) -> int:
         (
             factor_name,
             "Lifestyle",
-            factor_name not in ("Age", "Heredity"),
-            "Primary lifestyle factor selected by the quote support workflow.",
+            factor_name not in ("Age",),
+            "Primary lifestyle factor selected by the rate recommendation workflow.",
         ),
     )
     return int(cursor.fetchone()[0])
@@ -340,10 +394,11 @@ def insert_workflow_result(
             customer_id = int(cursor.fetchone()[0])
 
             notes = (
-                f"Quote support tier={result.risk_tier}; "
-                f"base=${decimal_money(customer.base_monthly_rate)}; "
+                f"Rate recommendation tier={result.risk_tier}; "
+                f"base=${result.base_monthly_rate}; "
                 f"adjustment={result.rate_adjustment_factor}; "
-                f"recommended=${result.recommended_monthly_rate}."
+                f"recommended=${result.recommended_monthly_rate}; "
+                f"source={result.base_rate_source}."
             )
             cursor.execute(
                 """
@@ -359,7 +414,7 @@ def insert_workflow_result(
                     result.risk_score,
                     risk_factor_id,
                     date.today(),
-                    "Lifestyle risk decision tree model",
+                    "CDC BRFSS decision tree lifestyle risk model",
                     notes,
                 ),
             )
@@ -375,12 +430,12 @@ def insert_workflow_result(
                 """,
                 (
                     health_profile_id,
-                    "Class ML Pipeline",
-                    "CSV",
+                    "CDC BRFSS / CMS Rate PUF Workflow",
+                    "XPT/CSV",
                     DEFAULT_DATASET_URI,
-                    "chronic_disease_sample_data.csv",
+                    "brfss_lifestyle_risk_training.csv; cms_rate_benchmark.csv",
                     date.today(),
-                    "Training data reference for lifestyle risk quote support.",
+                    "CDC BRFSS lifestyle training data and CMS Exchange Rate PUF benchmark.",
                 ),
             )
             data_lake_ref_id = int(cursor.fetchone()[0])
@@ -398,7 +453,7 @@ def insert_workflow_result(
                     customer_id,
                     health_profile_id,
                     result.risk_tier,
-                    decimal_money(customer.base_monthly_rate),
+                    result.base_monthly_rate,
                     result.rate_adjustment_factor,
                     result.recommended_monthly_rate,
                     result.recommendation_reason,
@@ -444,14 +499,17 @@ def insert_workflow_result(
 
 def print_result(customer: CustomerInput, result: RiskResult) -> None:
     print()
-    print("Lifestyle Risk-Based Quote Support Result")
-    print("-----------------------------------------")
+    print("Lifestyle Risk-Based Rate Recommendation Result")
+    print("-----------------------------------------------")
     print(f"Customer: {customer.first_name} {customer.last_name}")
+    print(f"Age: {customer.age}")
+    print(f"Tobacco user: {customer.tobacco_user}")
     print(f"Model high-risk prediction: {result.model_prediction}")
     print(f"High-risk probability: {result.risk_probability:.2f}")
     print(f"Risk tier: {result.risk_tier}")
     print(f"Primary risk factor: {result.primary_risk_factor}")
-    print(f"Base monthly rate: ${decimal_money(customer.base_monthly_rate)}")
+    print(f"Base monthly rate: ${result.base_monthly_rate}")
+    print(f"Base rate source: {result.base_rate_source}")
     print(f"Rate adjustment factor: {result.rate_adjustment_factor}")
     print(f"Recommended monthly rate: ${result.recommended_monthly_rate}")
     print(f"Recommendation reason: {result.recommendation_reason}")
@@ -469,7 +527,8 @@ def main() -> None:
         )
 
     model = joblib.load(model_path)
-    result = score_risk(model, customer)
+    benchmark = load_rate_benchmark(args.rate_path.resolve(), customer)
+    result = score_risk(model, customer, benchmark)
     print_result(customer, result)
 
     if args.dry_run:
