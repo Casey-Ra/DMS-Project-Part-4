@@ -3,7 +3,7 @@
 This Part 4 project adds a small end-to-end workflow:
 
 1. Download and transform real data from the Centers for Disease Control and Prevention (CDC) Behavioral Risk Factor Surveillance System (BRFSS) and the Centers for Medicare & Medicaid Services (CMS) Marketplace Rate Public Use File (Rate PUF).
-2. Load the Decision Tree model generated for Part 4.
+2. Load the Decision Tree model trained for Part 4.
 3. Predict a lifestyle risk tier.
 4. Calculate an insurance rate recommendation using a Centers for Medicare & Medicaid Services (CMS) benchmark base rate.
 5. Write the result back to PostgreSQL.
@@ -58,7 +58,7 @@ python final_project\app\retrain_model.py
 ```
 
 The retraining script reads `final_project\model\brfss_lifestyle_risk_training.csv`.
-The generated model file is written to `final_project\model\chronic_disease_risk_model.joblib`.
+The trained model file is written to `final_project\model\chronic_disease_risk_model.joblib`.
 
 ## Data Sources
 
