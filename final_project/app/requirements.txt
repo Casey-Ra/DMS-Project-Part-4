@@ -2,3 +2,4 @@ pandas
 scikit-learn
 joblib
 psycopg2-binary
+SQLAlchemy

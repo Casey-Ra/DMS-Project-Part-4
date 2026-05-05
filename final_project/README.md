@@ -7,6 +7,7 @@ This Part 4 project adds a small end-to-end workflow:
 3. Predict a lifestyle risk tier.
 4. Calculate an insurance rate recommendation using a Centers for Medicare & Medicaid Services (CMS) benchmark base rate.
 5. Write the result back to PostgreSQL.
+6. Use SQLAlchemy ORM mappings for database inserts and updates.
 
 ## Install dependencies
 
@@ -28,10 +29,10 @@ This downloads official Centers for Disease Control and Prevention (CDC) BRFSS 2
 
 Build the real data sources and retrain the model first.
 
-Use this for a quick screenshot of the analytics output:
+Use this for a quick screenshot of the analytics output. The app will ask questions interactively:
 
 ```powershell
-python final_project\app\quote_risk_app.py --dry-run --first-name Casey --last-name Demo --age 45 --tobacco-user 1 --obese 1 --physical-inactivity 1 --binge-drinking 0 --heavy-drinking 0 --diabetes 0 --general-health 3
+python final_project\app\quote_risk_app.py --dry-run
 ```
 
 ## Run against PostgreSQL
@@ -45,7 +46,7 @@ $env:DMS_DATABASE_URL = "postgresql://USER:PASSWORD@HOST:5432/DATABASE"
 Then run:
 
 ```powershell
-python final_project\app\quote_risk_app.py --first-name Casey --last-name Demo --age 45 --tobacco-user 1 --obese 1 --physical-inactivity 1 --binge-drinking 0 --heavy-drinking 0 --diabetes 0 --general-health 3
+python final_project\app\quote_risk_app.py --skip-refresh-view
 ```
 
 The app creates `QuoteRecommendation` if it does not already exist. The table name remains `QuoteRecommendation`, but the report should describe the business output as a rate recommendation.
@@ -63,6 +64,10 @@ The generated model file is written to `final_project\model\chronic_disease_risk
 
 - Centers for Disease Control and Prevention (CDC) Behavioral Risk Factor Surveillance System (BRFSS) 2023 annual survey data: used for lifestyle and health-risk model training.
 - Centers for Medicare & Medicaid Services (CMS) Marketplace Rate Public Use File (Rate PUF) 2024: used to create age and tobacco benchmark monthly rates.
+
+## ORM Use
+
+The database workflow uses SQLAlchemy ORM models in `final_project\app\db_orm.py` for `Customer`, `ChronicDisease`, `RiskFactor`, `CustomerHealthProfile`, `HealthDataLakeRef`, and `QuoteRecommendation`.
 
 ## Topic framing
 
