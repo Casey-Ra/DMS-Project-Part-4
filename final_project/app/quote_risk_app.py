@@ -105,18 +105,44 @@ def decimal_money(value: Decimal) -> Decimal:
 def prompt_str_if_missing(value: str | None, prompt: str) -> str:
     if value is not None:
         return value
-    return input(prompt).strip()
+    while True:
+        raw = input(prompt).strip()
+        if raw:
+            return raw
+        print("Please enter a value.")
 
 
-def prompt_int_if_missing(value: int | None, prompt: str) -> int:
+def prompt_age_if_missing(value: int | None) -> int:
     if value is not None:
+        if 18 <= value <= 80:
+            return value
+        raise ValueError("Age must be between 18 and 80 for the BRFSS/CMS demo.")
+
+    while True:
+        raw = input("Age (18-80): ").strip()
+        try:
+            age = int(raw)
+        except ValueError:
+            print("Please enter a whole number.")
+            continue
+
+        if 18 <= age <= 80:
+            return age
+        print("Age must be between 18 and 80.")
+
+
+def validate_binary_default(value: int | None, label: str) -> int | None:
+    if value is None:
+        return None
+    if value in (0, 1):
         return value
-    return int(input(prompt).strip())
+    raise ValueError(f"{label} must be 0 or 1.")
 
 
 def prompt_yes_no_if_missing(value: int | None, prompt: str) -> int:
-    if value is not None:
-        return value
+    validated = validate_binary_default(value, prompt)
+    if validated is not None:
+        return validated
 
     while True:
         raw = input(f"{prompt} (y/n): ").strip().lower()
@@ -129,7 +155,9 @@ def prompt_yes_no_if_missing(value: int | None, prompt: str) -> int:
 
 def prompt_general_health_if_missing(value: int | None) -> int:
     if value is not None:
-        return value
+        if 1 <= value <= 5:
+            return value
+        raise ValueError("General health must be from 1 to 5.")
 
     print("General health:")
     print("  1 = excellent")
@@ -137,7 +165,17 @@ def prompt_general_health_if_missing(value: int | None) -> int:
     print("  3 = good")
     print("  4 = fair")
     print("  5 = poor")
-    return int(input("Choose 1-5: ").strip())
+    while True:
+        raw = input("Choose 1-5: ").strip()
+        try:
+            choice = int(raw)
+        except ValueError:
+            print("Please enter a whole number from 1 to 5.")
+            continue
+
+        if 1 <= choice <= 5:
+            return choice
+        print("Please choose a number from 1 to 5.")
 
 
 def load_note_defaults(notes_path: Path, note_id: str | None) -> dict[str, object]:
@@ -241,7 +279,7 @@ def read_customer_input(args: argparse.Namespace) -> CustomerInput:
             args.last_name or default_str(note_defaults, "last_name"),
             "Last name: ",
         ),
-        age=prompt_int_if_missing(args.age or default_int(note_defaults, "age"), "Age: "),
+        age=prompt_age_if_missing(args.age or default_int(note_defaults, "age")),
         tobacco_user=prompt_yes_no_if_missing(
             args.tobacco_user
             if args.tobacco_user is not None
