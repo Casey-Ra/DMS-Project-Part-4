@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 26px; font-weight: 700; fill: #222; }
+      .domain { fill: #eef4ff; stroke: #2f5597; stroke-width: 2; rx: 14; }
+      .gov { fill: #fff3cd; stroke: #9a6b00; stroke-width: 2; rx: 14; }
+      .text { font-family: Arial, sans-serif; font-size: 16px; fill: #222; }
+      .head { font-family: Arial, sans-serif; font-size: 20px; font-weight: 700; fill: #222; }
+      .small { font-family: Arial, sans-serif; font-size: 14px; fill: #222; }
+      .line { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #9a6b00; stroke-width: 2; stroke-dasharray: 8 6; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <text x="40" y="42" class="title">Figure 4. Reference Architecture Organizing Framework</text>
+
+  <rect x="60" y="95" width="240" height="120" class="domain"/>
+  <text x="180" y="130" class="head" text-anchor="middle">Business Domain</text>
+  <text x="180" y="162" class="text" text-anchor="middle">Rate Recommendation</text>
+  <text x="180" y="184" class="text" text-anchor="middle">Quote Review Use Case</text>
+
+  <rect x="340" y="95" width="240" height="120" class="domain"/>
+  <text x="460" y="130" class="head" text-anchor="middle">Application Domain</text>
+  <text x="460" y="162" class="text" text-anchor="middle">Python App</text>
+  <text x="460" y="184" class="text" text-anchor="middle">Database Mapping</text>
+
+  <rect x="620" y="95" width="240" height="120" class="domain"/>
+  <text x="740" y="130" class="head" text-anchor="middle">Data and Knowledge</text>
+  <text x="740" y="162" class="text" text-anchor="middle">Sources, Notes, Model</text>
+  <text x="740" y="184" class="text" text-anchor="middle">Metadata</text>
+
+  <rect x="900" y="95" width="240" height="120" class="domain"/>
+  <text x="1020" y="130" class="head" text-anchor="middle">Infrastructure</text>
+  <text x="1020" y="162" class="text" text-anchor="middle">Cloud Database</text>
+  <text x="1020" y="184" class="text" text-anchor="middle">GitHub, Local</text>
+
+  <rect x="210" y="360" width="780" height="210" class="gov"/>
+  <text x="500" y="400" class="head">Governance Layer</text>
+  <text x="280" y="445" class="text">Security, data quality, lineage</text>
+  <text x="280" y="475" class="text">Bias checks, fairness, transparency</text>
+  <text x="280" y="505" class="text">Human review before final decisions</text>
+  <text x="280" y="535" class="text">Credential protection and privacy controls</text>
+
+  <path d="M300,155 L340,155" class="line"/>
+  <path d="M580,155 L620,155" class="line"/>
+  <path d="M860,155 L900,155" class="line"/>
+  <path d="M360,360 L360,300 L180,300 L180,215" class="dash"/>
+  <path d="M500,360 L500,300 L460,300 L460,215" class="dash"/>
+  <path d="M700,360 L700,300 L740,300 L740,215" class="dash"/>
+  <path d="M840,360 L840,300 L1020,300 L1020,215" class="dash"/>
+</svg>
+
+

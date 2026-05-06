@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 26px; font-weight: 700; fill: #222; }
+      .box { fill: #eef4ff; stroke: #2f5597; stroke-width: 2; rx: 10; }
+      .decision { fill: #fff3cd; stroke: #9a6b00; stroke-width: 2; }
+      .db { fill: #e2f0d9; stroke: #548235; stroke-width: 2; rx: 10; }
+      .text { font-family: Arial, sans-serif; font-size: 16px; fill: #222; }
+      .small { font-family: Arial, sans-serif; font-size: 14px; fill: #222; }
+      .line { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <text x="40" y="42" class="title">Figure 1. Business Use Case Model</text>
+
+  <rect x="60" y="80" width="220" height="58" class="box"/>
+  <text x="170" y="114" class="text" text-anchor="middle">Quote Review User</text>
+
+  <rect x="360" y="80" width="220" height="58" class="box"/>
+  <text x="470" y="105" class="text" text-anchor="middle">Start Rate</text>
+  <text x="470" y="125" class="text" text-anchor="middle">Recommendation</text>
+
+  <rect x="660" y="80" width="220" height="58" class="box"/>
+  <text x="770" y="105" class="text" text-anchor="middle">Enter Customer</text>
+  <text x="770" y="125" class="text" text-anchor="middle">Information</text>
+
+  <polygon points="770,190 895,255 770,320 645,255" class="decision"/>
+  <text x="770" y="250" class="text" text-anchor="middle">Use Unstructured</text>
+  <text x="770" y="270" class="text" text-anchor="middle">Note?</text>
+
+  <rect x="390" y="230" width="210" height="58" class="box"/>
+  <text x="495" y="255" class="text" text-anchor="middle">Answer Lifestyle</text>
+  <text x="495" y="275" class="text" text-anchor="middle">Questions</text>
+
+  <rect x="950" y="230" width="210" height="58" class="box"/>
+  <text x="1055" y="255" class="text" text-anchor="middle">Load Lifestyle</text>
+  <text x="1055" y="275" class="text" text-anchor="middle">Note</text>
+
+  <rect x="950" y="360" width="210" height="58" class="box"/>
+  <text x="1055" y="385" class="text" text-anchor="middle">Extract Risk</text>
+  <text x="1055" y="405" class="text" text-anchor="middle">Features</text>
+
+  <rect x="645" y="440" width="250" height="58" class="box"/>
+  <text x="770" y="465" class="text" text-anchor="middle">Create Model-Ready</text>
+  <text x="770" y="485" class="text" text-anchor="middle">Feature Set</text>
+
+  <rect x="645" y="550" width="250" height="58" class="box"/>
+  <text x="770" y="575" class="text" text-anchor="middle">Run Health Risk</text>
+  <text x="770" y="595" class="text" text-anchor="middle">Model</text>
+
+  <rect x="360" y="550" width="220" height="58" class="box"/>
+  <text x="470" y="575" class="text" text-anchor="middle">Generate Risk</text>
+  <text x="470" y="595" class="text" text-anchor="middle">Tier</text>
+
+  <rect x="80" y="550" width="220" height="58" class="box"/>
+  <text x="190" y="575" class="text" text-anchor="middle">Look Up Base</text>
+  <text x="190" y="595" class="text" text-anchor="middle">Rate</text>
+
+  <rect x="80" y="650" width="220" height="58" class="box"/>
+  <text x="190" y="675" class="text" text-anchor="middle">Apply Rate</text>
+  <text x="190" y="695" class="text" text-anchor="middle">Adjustment Rule</text>
+
+  <rect x="360" y="650" width="220" height="58" class="box"/>
+  <text x="470" y="675" class="text" text-anchor="middle">Display Rate</text>
+  <text x="470" y="695" class="text" text-anchor="middle">Recommendation</text>
+
+  <rect x="645" y="650" width="250" height="58" class="db"/>
+  <text x="770" y="675" class="text" text-anchor="middle">Save Workflow Result</text>
+  <text x="770" y="695" class="text" text-anchor="middle">to Database</text>
+
+  <rect x="950" y="650" width="210" height="58" class="box"/>
+  <text x="1055" y="685" class="text" text-anchor="middle">Human Reviews</text>
+
+  <path d="M280,109 L360,109" class="line"/>
+  <path d="M580,109 L660,109" class="line"/>
+  <path d="M770,138 L770,190" class="line"/>
+  <path d="M645,255 L600,255" class="line"/>
+  <path d="M895,255 L950,255" class="line"/>
+  <path d="M1055,288 L1055,360" class="line"/>
+  <path d="M495,288 L495,469 L645,469" class="line"/>
+  <path d="M1055,418 L1055,469 L895,469" class="line"/>
+  <path d="M770,498 L770,550" class="line"/>
+  <path d="M645,579 L580,579" class="line"/>
+  <path d="M360,579 L300,579" class="line"/>
+  <path d="M190,608 L190,650" class="line"/>
+  <path d="M300,679 L360,679" class="line"/>
+  <path d="M580,679 L645,679" class="line"/>
+  <path d="M895,679 L950,679" class="line"/>
+  <text x="612" y="238" class="small">No</text>
+  <text x="910" y="238" class="small">Yes</text>
+</svg>
+

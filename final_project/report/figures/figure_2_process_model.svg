@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 26px; font-weight: 700; fill: #222; }
+      .lane { fill: #f8f9fa; stroke: #b7b7b7; stroke-width: 2; rx: 12; }
+      .box { fill: #eef4ff; stroke: #2f5597; stroke-width: 2; rx: 10; }
+      .data { fill: #e2f0d9; stroke: #548235; stroke-width: 2; rx: 10; }
+      .text { font-family: Arial, sans-serif; font-size: 15px; fill: #222; }
+      .laneTitle { font-family: Arial, sans-serif; font-size: 20px; font-weight: 700; fill: #333; }
+      .line { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .plainLine { stroke: #333; stroke-width: 2; fill: none; }
+    </style>
+  </defs>
+  <text x="40" y="42" class="title">Figure 2. Process Model</text>
+
+  <rect x="40" y="70" width="1120" height="190" class="lane"/>
+  <text x="60" y="102" class="laneTitle">Data Preparation</text>
+  <rect x="80" y="130" width="190" height="56" class="data"/>
+  <text x="175" y="155" class="text" text-anchor="middle">Health Survey</text>
+  <text x="175" y="174" class="text" text-anchor="middle">Source File</text>
+  <rect x="330" y="130" width="210" height="56" class="box"/>
+  <text x="435" y="155" class="text" text-anchor="middle">Clean Training</text>
+  <text x="435" y="174" class="text" text-anchor="middle">Data</text>
+  <rect x="600" y="130" width="210" height="56" class="data"/>
+  <text x="705" y="155" class="text" text-anchor="middle">Model-Ready</text>
+  <text x="705" y="174" class="text" text-anchor="middle">Dataset</text>
+  <rect x="80" y="200" width="190" height="42" class="data"/>
+  <text x="175" y="226" class="text" text-anchor="middle">Rate File</text>
+  <rect x="330" y="200" width="210" height="42" class="box"/>
+  <text x="435" y="226" class="text" text-anchor="middle">Build Rate</text>
+  <rect x="600" y="200" width="210" height="42" class="data"/>
+  <text x="705" y="226" class="text" text-anchor="middle">Rate Benchmark</text>
+  <rect x="850" y="130" width="250" height="56" class="data"/>
+  <text x="975" y="155" class="text" text-anchor="middle">Free-Text Lifestyle</text>
+  <text x="975" y="174" class="text" text-anchor="middle">Notes</text>
+  <rect x="850" y="200" width="250" height="42" class="box"/>
+  <text x="975" y="226" class="text" text-anchor="middle">Parse Unstructured Notes</text>
+
+  <rect x="40" y="290" width="1120" height="170" class="lane"/>
+  <text x="60" y="322" class="laneTitle">Machine Learning Workflow</text>
+  <rect x="110" y="360" width="230" height="56" class="data"/>
+  <text x="225" y="385" class="text" text-anchor="middle">Model-Ready Dataset</text>
+  <rect x="430" y="360" width="220" height="56" class="box"/>
+  <text x="540" y="385" class="text" text-anchor="middle">Retrain Decision</text>
+  <text x="540" y="404" class="text" text-anchor="middle">Tree Model</text>
+  <rect x="740" y="360" width="220" height="56" class="data"/>
+  <text x="850" y="385" class="text" text-anchor="middle">Trained Model</text>
+  <text x="850" y="404" class="text" text-anchor="middle">File</text>
+
+  <rect x="40" y="490" width="1120" height="220" class="lane"/>
+  <text x="60" y="522" class="laneTitle">Application and Database Workflow</text>
+  <rect x="80" y="560" width="190" height="56" class="box"/>
+  <text x="175" y="585" class="text" text-anchor="middle">Customer Input</text>
+  <text x="175" y="604" class="text" text-anchor="middle">or Note Features</text>
+  <rect x="330" y="560" width="200" height="56" class="box"/>
+  <text x="430" y="585" class="text" text-anchor="middle">Risk Tier</text>
+  <text x="430" y="604" class="text" text-anchor="middle">Prediction</text>
+  <rect x="590" y="560" width="200" height="56" class="box"/>
+  <text x="690" y="585" class="text" text-anchor="middle">Rate Adjustment</text>
+  <text x="690" y="604" class="text" text-anchor="middle">Calculation</text>
+  <rect x="850" y="560" width="210" height="56" class="box"/>
+  <text x="955" y="585" class="text" text-anchor="middle">Database</text>
+  <text x="955" y="604" class="text" text-anchor="middle">Save</text>
+  <rect x="850" y="640" width="210" height="42" class="data"/>
+  <text x="955" y="666" class="text" text-anchor="middle">Cloud Database</text>
+
+  <path d="M270,158 L330,158" class="line"/>
+  <path d="M540,158 L600,158" class="line"/>
+  <path d="M270,221 L330,221" class="line"/>
+  <path d="M540,221 L600,221" class="line"/>
+  <path d="M975,186 L975,200" class="line"/>
+  <path d="M600,186 L570,186 L570,275 L365,275 L365,388 L340,388" class="plainLine"/>
+  <path d="M340,388 L430,388" class="line"/>
+  <path d="M650,388 L740,388" class="line"/>
+  <path d="M975,242 L975,535 L175,535 L175,560" class="line"/>
+  <path d="M960,416 L960,470 L430,470 L430,560" class="line"/>
+  <path d="M270,588 L330,588" class="line"/>
+  <path d="M530,588 L590,588" class="line"/>
+  <path d="M705,242 L705,520 L690,520 L690,560" class="line"/>
+  <path d="M790,588 L850,588" class="line"/>
+  <path d="M955,616 L955,640" class="line"/>
+</svg>
+

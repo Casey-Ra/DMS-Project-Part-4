@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+    </marker>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 26px; font-weight: 700; fill: #222; }
+      .box { fill: #eef4ff; stroke: #2f5597; stroke-width: 2; rx: 12; }
+      .wisdom { fill: #e2f0d9; stroke: #548235; stroke-width: 2; rx: 12; }
+      .text { font-family: Arial, sans-serif; font-size: 16px; fill: #222; }
+      .head { font-family: Arial, sans-serif; font-size: 20px; font-weight: 700; fill: #222; }
+      .line { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <text x="40" y="42" class="title">Figure 5. Data-to-Decision Flow</text>
+
+  <rect x="45" y="110" width="210" height="160" class="box"/>
+  <text x="150" y="150" class="head" text-anchor="middle">Data</text>
+  <text x="150" y="190" class="text" text-anchor="middle">Health Survey Files</text>
+  <text x="150" y="218" class="text" text-anchor="middle">Rate File</text>
+  <text x="150" y="246" class="text" text-anchor="middle">Lifestyle Notes</text>
+
+  <rect x="305" y="110" width="220" height="160" class="box"/>
+  <text x="415" y="150" class="head" text-anchor="middle">Information</text>
+  <text x="415" y="190" class="text" text-anchor="middle">Clean Risk Features</text>
+  <text x="415" y="218" class="text" text-anchor="middle">Age, Tobacco, BMI</text>
+  <text x="415" y="246" class="text" text-anchor="middle">Alcohol, Diabetes</text>
+
+  <rect x="575" y="110" width="220" height="160" class="box"/>
+  <text x="685" y="150" class="head" text-anchor="middle">Knowledge</text>
+  <text x="685" y="190" class="text" text-anchor="middle">Trained ML Model</text>
+  <text x="685" y="218" class="text" text-anchor="middle">Risk Probability</text>
+  <text x="685" y="246" class="text" text-anchor="middle">Risk Tier</text>
+
+  <rect x="845" y="110" width="240" height="160" class="wisdom"/>
+  <text x="965" y="150" class="head" text-anchor="middle">Wisdom</text>
+  <text x="965" y="190" class="text" text-anchor="middle">Rate Recommendation</text>
+  <text x="965" y="218" class="text" text-anchor="middle">Human Review</text>
+  <text x="965" y="246" class="text" text-anchor="middle">Database Update</text>
+
+  <path d="M255,190 L305,190" class="line"/>
+  <path d="M525,190 L575,190" class="line"/>
+  <path d="M795,190 L845,190" class="line"/>
+</svg>
+
