@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from dataclasses import dataclass
 from datetime import date
@@ -21,16 +22,20 @@ from db_orm import (
     upsert_disease,
     upsert_risk_factor,
 )
+from parse_unstructured_notes import extract_features
 
 
 PART4_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODEL_PATH = PART4_ROOT / "model" / "chronic_disease_risk_model.joblib"
 DEFAULT_RATE_PATH = PART4_ROOT / "model" / "cms_rate_benchmark.csv"
+DEFAULT_NOTES_PATH = PART4_ROOT / "data_unstructured" / "patient_lifestyle_notes.jsonl"
 DEFAULT_DATASET_URI = (
     "Centers for Disease Control and Prevention (CDC) BRFSS 2023: "
     "https://www.cdc.gov/brfss/annual_data/annual_2023.html; "
     "Centers for Medicare & Medicaid Services (CMS) Rate PUF 2024: "
-    "https://www.cms.gov/marketplace/resources/data/public-use-files"
+    "https://www.cms.gov/marketplace/resources/data/public-use-files; "
+    "Unstructured lifestyle notes: local://final_project/data_unstructured/"
+    "patient_lifestyle_notes.jsonl"
 )
 
 FEATURE_COLUMNS = [
@@ -70,6 +75,7 @@ class CustomerInput:
     diabetes: int
     general_health: int
     manual_base_monthly_rate: Decimal | None
+    raw_lifestyle_note: str | None = None
 
 
 @dataclass
@@ -134,12 +140,56 @@ def prompt_general_health_if_missing(value: int | None) -> int:
     return int(input("Choose 1-5: ").strip())
 
 
+def load_note_defaults(notes_path: Path, note_id: str | None) -> dict[str, object]:
+    if not note_id:
+        return {}
+
+    with notes_path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if str(row["patient_note_id"]).lower() == note_id.lower():
+                features = extract_features(str(row["note"]))
+                return {
+                    "first_name": row["first_name"],
+                    "last_name": row["last_name"],
+                    "age": int(row["age"]),
+                    **features,
+                    "raw_lifestyle_note": row["note"],
+                }
+
+    raise ValueError(f"Patient note ID '{note_id}' was not found in {notes_path}.")
+
+
+def default_str(defaults: dict[str, object], key: str) -> str | None:
+    value = defaults.get(key)
+    return value if isinstance(value, str) else None
+
+
+def default_int(defaults: dict[str, object], key: str) -> int | None:
+    value = defaults.get(key)
+    return value if isinstance(value, int) else None
+
+
+def optional_note_id_if_missing(value: str | None) -> str | None:
+    if value:
+        return value
+    raw = input("Patient note ID from unstructured notes file (optional, press Enter to skip): ")
+    return raw.strip() or None
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="BRFSS and CMS based lifestyle risk rate recommendation demo."
     )
     parser.add_argument("--first-name")
     parser.add_argument("--last-name")
+    parser.add_argument(
+        "--note-id",
+        help="Optional patient_note_id from data_unstructured/patient_lifestyle_notes.jsonl.",
+    )
+    parser.add_argument("--notes-path", type=Path, default=DEFAULT_NOTES_PATH)
     parser.add_argument("--age", type=int)
     parser.add_argument("--tobacco-user", type=int, choices=(0, 1))
     parser.add_argument("--obese", type=int, choices=(0, 1))
@@ -179,24 +229,64 @@ def parse_args() -> argparse.Namespace:
 
 
 def read_customer_input(args: argparse.Namespace) -> CustomerInput:
+    note_id = optional_note_id_if_missing(args.note_id)
+    note_defaults = load_note_defaults(args.notes_path.resolve(), note_id)
+
     return CustomerInput(
-        first_name=prompt_str_if_missing(args.first_name, "First name: "),
-        last_name=prompt_str_if_missing(args.last_name, "Last name: "),
-        age=prompt_int_if_missing(args.age, "Age: "),
-        tobacco_user=prompt_yes_no_if_missing(args.tobacco_user, "Tobacco user?"),
-        obese=prompt_yes_no_if_missing(args.obese, "Obese BMI category?"),
+        first_name=prompt_str_if_missing(
+            args.first_name or default_str(note_defaults, "first_name"),
+            "First name: ",
+        ),
+        last_name=prompt_str_if_missing(
+            args.last_name or default_str(note_defaults, "last_name"),
+            "Last name: ",
+        ),
+        age=prompt_int_if_missing(args.age or default_int(note_defaults, "age"), "Age: "),
+        tobacco_user=prompt_yes_no_if_missing(
+            args.tobacco_user
+            if args.tobacco_user is not None
+            else default_int(note_defaults, "tobacco_user"),
+            "Tobacco user?",
+        ),
+        obese=prompt_yes_no_if_missing(
+            args.obese if args.obese is not None else default_int(note_defaults, "obese"),
+            "Obese BMI category?",
+        ),
         physical_inactivity=prompt_yes_no_if_missing(
-            args.physical_inactivity, "Physically inactive?"
+            args.physical_inactivity
+            if args.physical_inactivity is not None
+            else default_int(note_defaults, "physical_inactivity"),
+            "Physically inactive?",
         ),
         binge_drinking=prompt_yes_no_if_missing(
-            args.binge_drinking, "Binge drinking risk?"
+            args.binge_drinking
+            if args.binge_drinking is not None
+            else default_int(note_defaults, "binge_drinking"),
+            "Binge drinking risk?",
         ),
         heavy_drinking=prompt_yes_no_if_missing(
-            args.heavy_drinking, "Heavy drinking risk?"
+            args.heavy_drinking
+            if args.heavy_drinking is not None
+            else default_int(note_defaults, "heavy_drinking"),
+            "Heavy drinking risk?",
         ),
-        diabetes=prompt_yes_no_if_missing(args.diabetes, "Diabetes?"),
-        general_health=prompt_general_health_if_missing(args.general_health),
+        diabetes=prompt_yes_no_if_missing(
+            args.diabetes
+            if args.diabetes is not None
+            else default_int(note_defaults, "diabetes"),
+            "Diabetes?",
+        ),
+        general_health=prompt_general_health_if_missing(
+            args.general_health
+            if args.general_health is not None
+            else default_int(note_defaults, "general_health")
+        ),
         manual_base_monthly_rate=args.base_monthly_rate,
+        raw_lifestyle_note=(
+            str(note_defaults["raw_lifestyle_note"])
+            if "raw_lifestyle_note" in note_defaults
+            else None
+        ),
     )
 
 
@@ -366,6 +456,8 @@ def insert_workflow_result(
             f"recommended=${result.recommended_monthly_rate}; "
             f"source={result.base_rate_source}."
         )
+        if customer.raw_lifestyle_note:
+            notes = f"{notes} Unstructured lifestyle note parsed."
         db_health_profile = CustomerHealthProfile(
             CustomerID=customer_id,
             DiseaseID=disease_id,
@@ -381,12 +473,18 @@ def insert_workflow_result(
 
         db_data_lake_ref = HealthDataLakeRef(
             HealthProfileID=health_profile_id,
-            SourceSystem="CDC BRFSS / CMS Rate PUF Workflow",
+            SourceSystem="CDC BRFSS / CMS Rate PUF / Unstructured Notes Workflow",
             DataFormat="XPT/CSV",
             CloudStorageURI=DEFAULT_DATASET_URI,
-            DatasetName="brfss_lifestyle_risk_training.csv; cms_rate_benchmark.csv",
+            DatasetName=(
+                "brfss_lifestyle_risk_training.csv; cms_rate_benchmark.csv; "
+                "patient_lifestyle_notes.jsonl"
+            ),
             LoadDate=date.today(),
-            FileDescription="CDC BRFSS lifestyle training data and CMS Exchange Rate PUF benchmark.",
+            FileDescription=(
+                "CDC BRFSS lifestyle training data, CMS Exchange Rate PUF benchmark, "
+                "and parsed unstructured lifestyle note input."
+            ),
         )
         session.add(db_data_lake_ref)
         session.flush()
@@ -439,6 +537,8 @@ def print_result(customer: CustomerInput, result: RiskResult) -> None:
     print(f"Customer: {customer.first_name} {customer.last_name}")
     print(f"Age: {customer.age}")
     print(f"Tobacco user: {customer.tobacco_user}")
+    if customer.raw_lifestyle_note:
+        print(f"Unstructured lifestyle note: {customer.raw_lifestyle_note}")
     print(f"Model high-risk prediction: {result.model_prediction}")
     print(f"High-risk probability: {result.risk_probability:.2f}")
     print(f"Risk tier: {result.risk_tier}")
