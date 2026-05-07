@@ -305,3 +305,4 @@ ALTER TABLE "CustomerHealthProfile" ADD FOREIGN KEY ("DiseaseID") REFERENCES "Ch
 ALTER TABLE "CustomerHealthProfile" ADD FOREIGN KEY ("PrimaryRiskFactorID") REFERENCES "RiskFactor" ("RiskFactorID") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "HealthDataLakeRef" ADD FOREIGN KEY ("HealthProfileID") REFERENCES "CustomerHealthProfile" ("HealthProfileID") DEFERRABLE INITIALLY IMMEDIATE;
+
