@@ -42,7 +42,3 @@ python final_project/app/quote_risk_app.py --skip-refresh-view --note-id NOTE001
 - CDC BRFSS 2023: Lifestyle training data
 - CMS Rate PUF 2024: Insurance rate benchmarks
 - Patient lifestyle notes: Unstructured text parsing demo
-
-Use this insight question:
-
-> Can lifestyle and behavioral risk factors help classify a customer into a low, medium, or high risk tier for quote review and rate recommendation?
