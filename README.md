@@ -1,6 +1,6 @@
-# Lifestyle Risk-Based Rate Recommendation
+# Lifestyle Risk-Based Insurance Rate Recommendation
 
-A machine learning workflow that predicts insurance risk tiers and recommends rates based on lifestyle factors.
+A machine learning workflow that predicts insurance risk tiers and recommends rates based on lifestyle factors. The app combines structured public health and insurance benchmark data with parsed lifestyle notes to produce a repeatable risk assessment pipeline. It includes scripts for building data sources, parsing unstructured notes, retraining the model, and running quote recommendations with or without a database connection.
 
 ## Setup
 
